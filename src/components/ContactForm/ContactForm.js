@@ -10,35 +10,31 @@ import {
   ErrorMessage,
   FormButton,
 } from './ContactForm.styled';
-import { addContact } from '../../redux/contactsSlice';
+import { addContact } from '../../redux/operations';
+import { selectContacts } from '../../redux/selectors';
 
 const formSchema = Yup.object().shape({
-    name: Yup.string()
-    .min(2, 'Name must contain at least 2 characters')
-    .max(40, 'Too long name')
-    .required('Name is required!'),
-    number: Yup.string()
-    .matches(/^\+(?:[0-9] ?){6,14}[0-9]$/, {
-        message: 'Invalid Phone Number!',
-        excludeEmptyString: false,
-    })
-    .required('Phone number is required!')
-    .max(15, 'Invalid phone number!'),
+  name: Yup.string().min(2, 'Too Short!').required('Required'),
+  phone: Yup.string()
+    .matches(
+      /^(\d{2,}-\d{2,}-\d{2,}|\d{2,}-\d{2,}|\d{5,})$/,
+      'Phone number is not valid. Min 7 numbers (101-01-01)'
+    )
+    .required('Required'),
 });
-
 
 export const ContactForm = () => {
   const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
+  const contacts = useSelector(selectContacts);
 
   return (
     <FormContainer>
       <Formik
-        initialValues={{ name: '', number: '' }}
+        initialValues={{ name: '', phone: '' }}
         validationSchema={formSchema}
         onSubmit={(values, actions) => {
           if (
-            contacts.some(
+            contacts.find(
               contact =>
                 contact.name.toLocaleLowerCase() ===
                 values.name.toLocaleLowerCase()
@@ -59,8 +55,8 @@ export const ContactForm = () => {
 
           <FormGroup>
             Number
-            <Field type="tel" name="number" />
-            <ErrorMessage name="number" component="span" />
+            <Field type="tel" name="phone" />
+            <ErrorMessage name="phone" component="span" />
           </FormGroup>
 
           <FormButton type="submit">Add contact</FormButton>
